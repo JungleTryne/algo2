@@ -8,9 +8,8 @@ enum TVerticesColorType {
     VCT_BLACK	
 };
 
+//Покраска всего графа и восстановление пути для топологической сортировки путём обхода в глубину
 void dfs(const std::vector<std::vector<int>>& graph, int start, std::vector<int>& verticesColors, std::stack<int>& answerPath, bool& cycleNotFound) {
-    /* Функция поиска в глубину
-    */
 	if(verticesColors[start] == VCT_GREY) {
         cycleNotFound = false;
         return;
@@ -50,12 +49,12 @@ std::stack<int> topological_sort(const std::vector<std::vector<int>>& graph, boo
 }
 
 int main() {
-    int v = 0;
-    int e = 0;
-    std::cin >> v >> e;
-    std::vector<std::vector<int>> graph(v);
+    int vertexAmount = 0;
+    int edgeAmount = 0;
+    std::cin >> vertexAmount >> edgeAmount;
+    std::vector<std::vector<int>> graph(vertexAmount);
 
-    for(int i = 0; i < e; ++i) {
+    for(int i = 0; i < edgeAmount; ++i) {
         int from = 0, to = 0;
         std::cin >> from >> to;
         if(from == to) {
