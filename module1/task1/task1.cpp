@@ -36,14 +36,14 @@ int main() {
     std::cin >> v;
     std::cin >> e;
 
-    int leon = 0;
-    int mal = 0;
-    int milk = 0;
-    std::cin >> leon >> mal >> milk;
+    int leonVertex = 0;
+    int malVertex = 0;
+    int milkVertex = 0;
+    std::cin >> leonVertex >> malVertex >> milkVertex;
 
-    leon--;
-    mal--;
-    milk--;
+    leonVertex--; //Нумерация вершин с 1, а я хочу с нуля
+    malVertex--;
+    milkVertex--;
 
     std::vector<std::vector<int>> graph(v);
     for(size_t i = 0; i < e; ++i) {
@@ -53,9 +53,9 @@ int main() {
         graph[b-1].push_back(a-1);
     }
     
-    std::vector<int> milk_distances = find_distances(graph, milk);
-    std::vector<int> leo_distances = find_distances(graph, leon);
-    std::vector<int> mal_distances = find_distances(graph, mal);
+    std::vector<int> milk_distances = find_distances(graph, milkVertex);
+    std::vector<int> leo_distances = find_distances(graph, leonVertex);
+    std::vector<int> mal_distances = find_distances(graph, malVertex);
 
     int min_answer = milk_distances[0] + leo_distances[0] + mal_distances[0];
     for(int i = 1; i < v; i++) {
