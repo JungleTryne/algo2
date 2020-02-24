@@ -1,8 +1,14 @@
 #include <iostream>
-#include <vector>
 #include <stack>
+#include <vector>
 
-void dfs(const std::vector<std::vector<int>> &graph, int start, std::vector<int> &color, std::stack<int> &answer, bool &flag) {
+enum TVerticesColorType {
+    VCT_WHITE,
+    VCT_GREY,
+    VCT_BLACK	
+};
+
+void dfs(const std::vector<std::vector<int>>& graph, int start, std::vector<int>& verticesColors, std::stack<int>& answerPath, bool& cycleNotFound) {
     /* Функция поиска в глубину
     :param graph: граф
 	:param start: откуда стартуем dfs
@@ -11,23 +17,23 @@ void dfs(const std::vector<std::vector<int>> &graph, int start, std::vector<int>
     :param flag: При запуске dfs он true. Если найден цикл, то false
     :param answer: Храним пройденный путь
     */
-	if(color[start] == 1) {
-        flag = false;
+	if(verticesColors[start] == VCT_GREY) {
+        cycleNotFound = false;
         return;
     }
-    if(color[start] == 0) {
-        color[start] = 1;
+    if(verticesColors[start] == VCT_WHITE) {
+        verticesColors[start] = VCT_GREY;
     }
-    if(color[start] == 2) return;
+    if(verticesColors[start] == VCT_BLACK) return;
 
     for(int i = 0; i < graph[start].size(); ++i) {
-        dfs(graph, graph[start][i], color, answer, flag);
+        dfs(graph, graph[start][i], verticesColors, answerPath, cycleNotFound);
     }
-    answer.push(start);
-    color[start] = 2;
+    answerPath.push(start);
+    verticesColors[start] = VCT_BLACK;
 }
 
-std::stack<int> topological_sort(std::vector<std::vector<int>> graph, bool& ok) {
+std::stack<int> topological_sort(const std::vector<std::vector<int>>& graph, bool& successSort) {
 	/* Функция топологической сортировки. Используется алгоритм трех цветов
     Запускаем dfs от каждой неиспользованной вершины. Стоит заметить, что возможно уже при
     первом использовании dfs некоторые вершины будут покрашены, таким образом мы симулируем
@@ -35,20 +41,16 @@ std::stack<int> topological_sort(std::vector<std::vector<int>> graph, bool& ok) 
     
     */
     std::vector<int> color(graph.size());
-    bool flag = true;
+    bool cycleNotFound = true;
     std::stack<int> answer;
     for(int i = 0; i < graph.size(); i++) {
-        if(color[i] == 0) dfs(graph, i, color, answer, flag);
+        if(color[i] == 0) {
+            dfs(graph, i, color, answer, cycleNotFound);
+        }
     }
 
-    if(flag) {
-        ok = true;
-        return answer;
-    } else {
-        ok = false;
-        return {};
-    }
-    
+    successSort = cycleNotFound;
+    return answer;
 }
 
 int main() {
@@ -56,18 +58,22 @@ int main() {
     int e = 0;
     std::cin >> v >> e;
     std::vector<std::vector<int>> graph(v);
+
     for(int i = 0; i < e; ++i) {
-        int a = 0, b = 0;
-        std::cin >> a >> b;
-        if(a == b) {
+        int from = 0, to = 0;
+        std::cin >> from >> to;
+        if(from == to) {
+            //Петля - сразу NO
             std::cout << "NO";
             return 0;
         }
-        graph[a].push_back(b);
+        graph[from].push_back(to);
     }
-    bool ok = true;
-    std::stack<int> answer = topological_sort(graph, ok);
-    if(!ok) {
+
+    bool succesSort = true;
+    std::stack<int> answer = topological_sort(graph, succesSort);
+    
+    if(!succesSort) {
         std::cout << "NO";
         return 0;
     }
