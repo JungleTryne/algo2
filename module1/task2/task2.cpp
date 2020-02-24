@@ -12,10 +12,10 @@ void dfs(const std::vector<std::vector<int>>& graph, int start, std::vector<int>
     /* Функция поиска в глубину
     :param graph: граф
 	:param start: откуда стартуем dfs
-	:param color: используем алгоритм топ. сортировки методом 3х цветов
+	:param verticesColors: используем алгоритм топ. сортировки методом 3х цветов
     	Этот массив как раз хранит цвета вершин
-    :param flag: При запуске dfs он true. Если найден цикл, то false
-    :param answer: Храним пройденный путь
+    :param cycleNotFound: При запуске dfs он true. Если найден цикл, то false
+    :param answerPath: Храним пройденный путь
     */
 	if(verticesColors[start] == VCT_GREY) {
         cycleNotFound = false;
