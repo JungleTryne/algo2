@@ -24,7 +24,9 @@ void dfs(const std::vector<std::vector<int>>& graph, int start, std::vector<int>
     if(verticesColors[start] == VCT_WHITE) {
         verticesColors[start] = VCT_GREY;
     }
-    if(verticesColors[start] == VCT_BLACK) return;
+    if(verticesColors[start] == VCT_BLACK) {
+        return;
+    }
 
     for(int i = 0; i < graph[start].size(); ++i) {
         dfs(graph, graph[start][i], verticesColors, answerPath, cycleNotFound);
