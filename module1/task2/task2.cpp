@@ -34,18 +34,16 @@ bool dfs(const std::vector<std::vector<int>>& graph, int start, std::vector<int>
 //Запускаем dfs от каждой неиспользованной вершины. Стоит заметить, что возможно уже при
 //первом использовании dfs некоторые вершины будут покрашены, таким образом мы симулируем
 //отдачу изначального приказа только тем полицейским, которые не могут ни от кого получить информацию
-std::stack<int> topological_sort(const std::vector<std::vector<int>>& graph, bool& successSort) {
+bool topological_sort(const std::vector<std::vector<int>>& graph, std::stack<int>& answer) {
     std::vector<int> color(graph.size());
-    std::stack<int> answer;
-    successSort = true;
+    bool successSort = true;
 
     for(size_t i = 0; i < graph.size(); i++) {
         if(color[i] == 0) {
             successSort &= dfs(graph, i, color, answer);
         }
     }
-
-    return answer;
+    return successSort;
 }
 
 int main() {
@@ -66,9 +64,9 @@ int main() {
     }
 
     bool succesSort = true;
-    std::stack<int> answer = topological_sort(graph, succesSort);
+    std::stack<int> answer;
     
-    if(!succesSort) {
+    if(!topological_sort(graph, answer)) {
         std::cout << "NO";
         return 0;
     }
