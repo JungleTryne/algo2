@@ -9,42 +9,42 @@ enum TVerticesColorType {
 };
 
 //Покраска всего графа и восстановление пути для топологической сортировки путём обхода в глубину
-void dfs(const std::vector<std::vector<int>>& graph, int start, std::vector<int>& verticesColors, std::stack<int>& answerPath, bool& cycleNotFound) {
+bool dfs(const std::vector<std::vector<int>>& graph, int start, std::vector<int>& verticesColors, std::stack<int>& answerPath) {
 	if(verticesColors[start] == VCT_GREY) {
-        cycleNotFound = false;
-        return;
+        return false;
     }
     if(verticesColors[start] == VCT_WHITE) {
         verticesColors[start] = VCT_GREY;
     }
     if(verticesColors[start] == VCT_BLACK) {
-        return;
+        return true;
     }
 
-    for(int i = 0; i < graph[start].size(); ++i) {
-        dfs(graph, graph[start][i], verticesColors, answerPath, cycleNotFound);
+    bool returnSuccess = true;
+
+    for(size_t i = 0; i < graph[start].size(); ++i) {
+        returnSuccess &= dfs(graph, graph[start][i], verticesColors, answerPath);
     }
     answerPath.push(start);
     verticesColors[start] = VCT_BLACK;
+    return returnSuccess;
 }
 
+//Функция топологической сортировки. Используется алгоритм трех цветов
+//Запускаем dfs от каждой неиспользованной вершины. Стоит заметить, что возможно уже при
+//первом использовании dfs некоторые вершины будут покрашены, таким образом мы симулируем
+//отдачу изначального приказа только тем полицейским, которые не могут ни от кого получить информацию
 std::stack<int> topological_sort(const std::vector<std::vector<int>>& graph, bool& successSort) {
-	/* Функция топологической сортировки. Используется алгоритм трех цветов
-    Запускаем dfs от каждой неиспользованной вершины. Стоит заметить, что возможно уже при
-    первом использовании dfs некоторые вершины будут покрашены, таким образом мы симулируем
-    отдачу изначального приказа только тем полицейским, которые не могут ни от кого получить информацию
-    
-    */
     std::vector<int> color(graph.size());
-    bool cycleNotFound = true;
     std::stack<int> answer;
-    for(int i = 0; i < graph.size(); i++) {
+    successSort = true;
+
+    for(size_t i = 0; i < graph.size(); i++) {
         if(color[i] == 0) {
-            dfs(graph, i, color, answer, cycleNotFound);
+            successSort &= dfs(graph, i, color, answer);
         }
     }
 
-    successSort = cycleNotFound;
     return answer;
 }
 
