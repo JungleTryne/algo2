@@ -2,11 +2,10 @@
 #include <vector>
 #include <queue>
 
+
+//Находим для каждой вершины графа кол-во шагов, которое нужно пройти, чтобы дойти от вершины
+//from до этой вершины. Возвращаем вектор расстояний 
 std::vector<int> find_distances(std::vector<std::vector<int>> graph, int from) {
-    /* Находим для каждой вершины графа кол-во шагов, которое нужно пройти, чтобы дойти от вершины
-    from до этой вершины
-    Возвращаем вектор расстояний 
-    */
     std::vector<int> distances(graph.size());
     std::vector<bool> visited(graph.size());
     std::queue<int> bfs;
@@ -30,11 +29,11 @@ std::vector<int> find_distances(std::vector<std::vector<int>> graph, int from) {
 }
 
 int main() {
-    int v = 0;
-    int e = 0;
+    int vertexNum = 0;
+    int edgeNum = 0;
 
-    std::cin >> v;
-    std::cin >> e;
+    std::cin >> vertexNum;
+    std::cin >> edgeNum;
 
     int leonVertex = 0;
     int malVertex = 0;
@@ -45,8 +44,8 @@ int main() {
     malVertex--;
     milkVertex--;
 
-    std::vector<std::vector<int>> graph(v);
-    for(size_t i = 0; i < e; ++i) {
+    std::vector<std::vector<int>> graph(vertexNum);
+    for(size_t i = 0; i < edgeNum; ++i) {
         int a = 0, b = 0;
         std::cin >> a >> b;
         graph[a-1].push_back(b-1);
@@ -58,7 +57,7 @@ int main() {
     std::vector<int> mal_distances = find_distances(graph, malVertex);
 
     int min_answer = milk_distances[0] + leo_distances[0] + mal_distances[0];
-    for(int i = 1; i < v; i++) {
+    for(int i = 1; i < vertexNum; i++) {
         int new_answer = milk_distances[i] + leo_distances[i] + mal_distances[i];
         min_answer = (min_answer < new_answer ? min_answer : new_answer);
     }
