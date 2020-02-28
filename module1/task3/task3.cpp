@@ -5,13 +5,13 @@
 
 
 //Функция обхода в глубину. В out записывет времены выхода из вершины
-void depthFirstSearch(const std::vector<std::vector<int>>& graph, int start, std::vector<int>& outTimings, std::vector<bool>& visited) {
+void DFStoGetOutTimings(const std::vector<std::vector<int>>& graph, int start, std::vector<int>& outTimings, std::vector<bool>& visited) {
     static int counter = 0;
 
     visited[start] = true;
     for(size_t i = 0; i < graph[start].size(); ++i) {
         if(!visited[graph[start][i]]) {
-            depthFirstSearch(graph, graph[start][i], outTimings, visited);
+            DFStoGetOutTimings(graph, graph[start][i], outTimings, visited);
         }
     }
 
@@ -21,12 +21,12 @@ void depthFirstSearch(const std::vector<std::vector<int>>& graph, int start, std
 
 
 //Фукнция обхода в глубину. В buffer записывет вершины, которые мы посетили
-void secondDepthFirstSearch(const std::vector<std::vector<int>>& graph, int start, std::vector<bool>& visited, std::vector<int>& buffer) {
+void DFStoGetSCC(const std::vector<std::vector<int>>& graph, int start, std::vector<bool>& visited, std::vector<int>& buffer) {
     visited[start] = true;
     buffer.push_back(start);
     for(size_t i = 0; i < graph[start].size(); i++) {
         if(!visited[graph[start][i]]) {
-            secondDepthFirstSearch(graph, graph[start][i], visited, buffer);
+            DFStoGetSCC(graph, graph[start][i], visited, buffer);
         }
     }
 }
@@ -38,7 +38,7 @@ std::vector<int> getOutTimings(const std::vector<std::vector<int>>& graph) {
     std::vector<int> outTimings(graph.size());
     for(size_t i = 0; i < graph.size(); ++i) {
         if(!visited[i]) {
-            depthFirstSearch(graph, i, outTimings, visited);
+            DFStoGetOutTimings(graph, i, outTimings, visited);
         }
     }
     return outTimings;
@@ -80,7 +80,7 @@ std::vector<int> getSCCvector(const std::vector<std::vector<int>>& graph) {
         if(!visited[outVertexes[i]]) {
             std::vector<int> buffer;
 
-            secondDepthFirstSearch(reversedGraph, outVertexes[i], visited, buffer);
+            DFStoGetSCC(reversedGraph, outVertexes[i], visited, buffer);
             //Элементы buffer являются элементами одной компоненты связности
             for(size_t j = 0; j < buffer.size(); ++j) {
                 SCCarray[buffer[j]] = SCCNum;
@@ -131,12 +131,14 @@ int getSourceAmount(const std::vector<std::vector<int>>& SCCgraph) {
     return sourceAmount;
 }
 
-int solveProblem(const std::vector<std::vector<int>>& graph) {
+int getNumOfAdditionalEdges(const std::vector<std::vector<int>>& graph) {
     std::vector<int> SCCvector = getSCCvector(graph);
     std::vector<std::vector<int>> SCCgraph = getSCCgraph(graph, SCCvector);
 
     //Если только одна компонента связности, то все ок, ничего добавлять не надо
-    if(SCCgraph.size() == 1) return 0; 
+    if(SCCgraph.size() == 1) {
+        return 0; 
+    }
 
     int sinkAmount = getSinkAmount(SCCgraph);
     int sourceAmount = getSourceAmount(SCCgraph);
@@ -158,7 +160,7 @@ int main() {
         graph[from-1].push_back(to-1);
     }
 
-    std::cout << solveProblem(graph) << std::endl;
+    std::cout << getNumOfAdditionalEdges(graph) << std::endl;
 
     return 0;
 }
