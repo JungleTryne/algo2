@@ -39,7 +39,7 @@ bool topological_sort(const std::vector<std::vector<int>>& graph, std::stack<int
     bool successSort = true;
 
     for(size_t i = 0; i < graph.size(); i++) {
-        if(color[i] == 0) {
+        if(color[i] == VCT_WHITE) {
             successSort &= dfs(graph, i, color, answer);
         }
     }
@@ -64,16 +64,16 @@ int main() {
     }
 
     bool succesSort = true;
-    std::stack<int> answer;
+    std::stack<int> answerPath;
     
-    if(!topological_sort(graph, answer)) {
+    if(!topological_sort(graph, answerPath)) {
         std::cout << "NO";
         return 0;
     }
     std::cout << "YES" << std::endl;
-    while(!answer.empty()) {
-        std::cout << answer.top() << ' ';
-        answer.pop();
+    while(!answerPath.empty()) {
+        std::cout << answerPath.top() << ' ';
+        answerPath.pop();
     }
     return 0;
 
