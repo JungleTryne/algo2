@@ -53,7 +53,8 @@ int main() {
     std::vector<std::vector<int>> graph(vertexAmount);
 
     for(int i = 0; i < edgeAmount; ++i) {
-        int from = 0, to = 0;
+        int from = 0
+	int to = 0;
         std::cin >> from >> to;
         if(from == to) {
             //Петля - сразу NO
