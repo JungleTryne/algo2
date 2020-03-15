@@ -9,7 +9,7 @@
 #include <vector>
 
 //Функция для удаления ребер GPlane из графа
-std::vector<std::vector<int>> getGraphWithoutGPlane(const std::vector<std::vector<int>>& faces, 
+std::vector<std::vector<int>> GetGraphWithoutGplane(const std::vector<std::vector<int>>& faces, 
     const std::vector<std::vector<int>>& graph) 
 {
     std::vector<std::vector<int>> graphWithoutGplane = graph;
@@ -39,6 +39,12 @@ std::vector<std::vector<int>> getGraphWithoutGPlane(const std::vector<std::vecto
     return graphWithoutGplane;
 }
 
+enum TVerticesColorType {
+    VCT_WHITE,
+    VCT_GRAY,
+    VCT_BLACK
+};
+
 //DFS для нахождения цикла в графе. Использует алгоритм 3х цветов
 void DFSForCycleFinding(const std::vector<std::vector<int>>& graph, int from, std::vector<int>& color, 
     std::vector<int>& history, bool& success, int parent = -1) 
@@ -46,27 +52,27 @@ void DFSForCycleFinding(const std::vector<std::vector<int>>& graph, int from, st
     if( success ) {
         return;
     }
-    color[from] = 1;
+    color[from] = VCT_GRAY;
     history.push_back(from);
 
     for( size_t i = 0; i < graph[from].size(); ++i ) {
         if( success ) {
             return;
         }
-        if( color[graph[from][i]] == 0 ) {
+        if( color[graph[from][i]] == VCT_WHITE ) {
             DFSForCycleFinding(graph, graph[from][i], color, history, success, from);
         }
-        else if( color[graph[from][i]] == 1 && parent != graph[from][i] ) {
+        else if( color[graph[from][i]] == VCT_GRAY && parent != graph[from][i] ) {
             history.push_back(graph[from][i]);
             success = true;
             return;
         }
     }
-    color[from] = 2;
+    color[from] = VCT_BLACK;
 }
 
 //Нахождение простого цикла в графу. Возвращает true, если цикл найден, цикл записывается в vector cycle
-bool findCycle(const std::vector<std::vector<int>>& graph, std::vector<int>& cycle ) {
+bool FindCycle(const std::vector<std::vector<int>>& graph, std::vector<int>& cycle ) {
     std::vector<int> history;
     std::vector<int> color(graph.size());
 
@@ -99,7 +105,7 @@ struct Segment {
 };
 
 //Проверяет, является ли вершина контактной
-bool isContact(const std::set<int>& faces_set, int vertex) {
+bool IsContact(const std::set<int>& faces_set, int vertex) {
     return faces_set.find(vertex) != faces_set.end();
 }
 
@@ -110,7 +116,7 @@ void DFSForComponent(int from, const std::vector<std::vector<int>>& graph, const
     history.insert(from);
     visited[from] = true;
 
-    if( isContact(faces_set, from) ) {
+    if( IsContact(faces_set, from) ) {
         contact.insert(from);
         if( parent != -1 ) {
             return;
@@ -149,7 +155,7 @@ void DFSForChain(int from, int initialVertex, bool& chainFound, const std::vecto
 }
 
 //Удаление цепи из графа (Используется для графа: исходный граф \ gplane)
-void removeChainFromGraph(std::vector<std::vector<int>>& graph, std::vector<int> chain) {
+void RemoveChainFromGraph(std::vector<std::vector<int>>& graph, std::vector<int> chain) {
     for( size_t i = 0; i < chain.size()-1; ++i ) {
         graph[chain[i]].erase(remove(graph[chain[i]].begin(), graph[chain[i]].end(), chain[i+1]), 
             graph[chain[i]].end()
@@ -161,7 +167,7 @@ void removeChainFromGraph(std::vector<std::vector<int>>& graph, std::vector<int>
 }
 
 //Удаляем сегменты дубликаты
-void removeEqualSegments(std::vector<Segment>& segments) {
+void RemoveEqualSegments(std::vector<Segment>& segments) {
     std::vector<Segment> newSegments;
     for( size_t i = 0; i < segments.size(); ++i ) {
         bool notInNewSegments = true;
@@ -180,25 +186,16 @@ void removeEqualSegments(std::vector<Segment>& segments) {
     segments = newSegments;
 }
 
-void getSegments(std::vector<std::vector<int>>& faces,
-                    std::vector<std::vector<int>>& graphWithoutGplane,
-                    std::vector<Segment>& segments) {
-    
-    segments = {};
-
-    std::set<int> faces_set;
-    for( size_t i = 0; i < faces.size(); ++i ) {
-        for( size_t j = 0; j < faces[i].size(); ++j ) {
-            faces_set.insert(faces[i][j]);
-        }
-    }
-
-    //Находим сегменты первого типа
+//Получение сегментов первого типа
+void GetFirstTypeSegments(std::vector<std::vector<int>>& graphWithoutGplane,
+                    std::vector<Segment>& segments,
+                    const std::set<int>& facesSet) 
+{
     for( size_t i = 0; i < graphWithoutGplane.size(); ++i ) {
         for( size_t j = i+1; j < graphWithoutGplane.size(); ++j ) {
             auto position = std::find(graphWithoutGplane[i].begin(), graphWithoutGplane[i].end(), j);
-            if( position != graphWithoutGplane[i].end() && faces_set.find(i) != faces_set.end() && 
-                faces_set.find(j) != faces_set.end() ) 
+            if( position != graphWithoutGplane[i].end() && facesSet.find(i) != facesSet.end() && 
+                facesSet.find(j) != facesSet.end() ) 
             {
                 Segment segment;
                 segment.contactVertex.insert(i);
@@ -209,10 +206,10 @@ void getSegments(std::vector<std::vector<int>>& faces,
             }
         }
     }
+}
 
-    std::vector<std::vector<int>> graphWithoutCycle = graphWithoutGplane;
-
-    //Удаляем из Gplane сегменты первого типа
+//Удаление сегментов первого типа из graphWithoutGplane для облегчения поиска сегментов второго типа
+void RemoveFirstTypeSegmentsFromGraph(std::vector<Segment>& segments, std::vector<std::vector<int>> graphWithoutGplane) {
     for( size_t i = 0; i < segments.size(); ++i ) {
         std::vector<int> segment_vector;
         segment_vector.assign(segments[i].allVertex.begin(), segments[i].allVertex.end());
@@ -227,20 +224,22 @@ void getSegments(std::vector<std::vector<int>>& faces,
         if ( position != graphWithoutGplane[two].end() )
             graphWithoutGplane[two].erase(position);
     }
+}
 
-    //Получаем сегменты второго типа
+//Функция получения сегментов второго типа
+void GetSecondTypeSegments(std::vector<std::vector<int>> graphWithoutGplane, std::vector<Segment> segments, std::set<int> facesSet) {
     std::vector<bool> visited(graphWithoutGplane.size());
     for( size_t i = 0; i < graphWithoutGplane.size(); ++i ) {
-        removeEqualSegments(segments);
+        RemoveEqualSegments(segments);
 
         if( !graphWithoutGplane[i].empty() && !visited[i] ) {
-            bool iscontact = faces_set.find(i) != faces_set.end();
+            bool iscontact = facesSet.find(i) != facesSet.end();
             if( iscontact ) {
                 for( size_t j = 0; j < graphWithoutGplane[i].size(); ++j ) {
                     std::vector<bool> visited(graphWithoutGplane.size());
                     std::set<int> history;
                     std::set<int> contact;
-                    DFSForComponent(graphWithoutGplane[i][j], graphWithoutGplane, faces_set, history, contact, visited);
+                    DFSForComponent(graphWithoutGplane[i][j], graphWithoutGplane, facesSet, history, contact, visited);
                     Segment s;
                     s.allVertex = history;
                     s.contactVertex = contact;
@@ -251,30 +250,55 @@ void getSegments(std::vector<std::vector<int>>& faces,
     }
 }
 
+//Функция получение сегментов
+void GetSegments(const std::vector<std::vector<int>>& faces,
+                    std::vector<std::vector<int>>& graphWithoutGplane,
+                    std::vector<Segment>& segments) 
+{
+    
+    segments = {};
+
+    std::set<int> facesSet;
+    for( size_t i = 0; i < faces.size(); ++i ) {
+        for( size_t j = 0; j < faces[i].size(); ++j ) {
+            facesSet.insert(faces[i][j]);
+        }
+    }
+
+    GetFirstTypeSegments(graphWithoutGplane, segments, facesSet);
+    
+    std::vector<std::vector<int>> graphWithoutCycle = graphWithoutGplane;
+
+    RemoveFirstTypeSegmentsFromGraph(segments, graphWithoutGplane);
+
+    GetSecondTypeSegments(graphWithoutGplane, segments, facesSet);
+    
+}
+
 //Первый шаг алгоритма. Возвращает true, если цикл не найден
-bool initialPreparations(const std::vector<std::vector<int>>& graph, 
+bool InitialPreparations(const std::vector<std::vector<int>>& graph, 
                             std::vector<std::vector<int>>& faces,
                             std::vector<Segment>& segments,
                             std::vector<std::vector<int>>& graphWithoutGPlane) {
 
     std::vector<int> cycle;
-    if( !findCycle(graph, cycle) ) {
+    if( !FindCycle(graph, cycle) ) {
         return true;
     }
 
     faces.push_back(cycle);
     faces.push_back(cycle);
 
-    std::vector<std::vector<int>> graphWithoutGplane = getGraphWithoutGPlane(faces, graph);
+    std::vector<std::vector<int>> graphWithoutGplane = GetGraphWithoutGplane(faces, graph);
     
-    getSegments(faces, graphWithoutGplane, segments);
+    GetSegments(faces, graphWithoutGplane, segments);
     
-    removeEqualSegments(segments);
+    RemoveEqualSegments(segments);
     return false;
 }
 
 //Разделим грань найденной цепью. Результат помещается в faceOne, faceTwo
-void splitFaceWithChain(const std::vector<std::vector<int>>& graphWithoutGplane, std::vector<int>& face, 
+void SplitFaceWithChain(const std::vector<std::vector<int>>& graphWithoutGplane, std::vector<int>& face, 
     const std::vector<int>& chain, std::vector<int>& faceOne, std::vector<int>& faceTwo) 
 {
     int positionOfFirstElementOfChain = find(face.begin(), face.end(), chain[0]) - face.begin();
@@ -317,12 +341,12 @@ void splitFaceWithChain(const std::vector<std::vector<int>>& graphWithoutGplane,
 }
 
 //Основой алгоритм. Запускает проверу планарности компоненты графа
-bool isComponentPlanar(const std::vector<std::vector<int>>& graph) {
+bool IsComponentPlanar(const std::vector<std::vector<int>>& graph) {
     
     std::vector<std::vector<int>> faces;
     std::vector<Segment> segments;
     std::vector<std::vector<int>> graphWithoutGplane;
-    bool noCycle = initialPreparations(graph, faces, segments, graphWithoutGplane);
+    bool noCycle = InitialPreparations(graph, faces, segments, graphWithoutGplane);
 
     if( noCycle ) {
         return true;
@@ -379,7 +403,7 @@ bool isComponentPlanar(const std::vector<std::vector<int>>& graph) {
 
         Segment currentSegment = segments[segmentWithMinimalG];
 
-        graphWithoutGplane = getGraphWithoutGPlane(faces, graph);
+        graphWithoutGplane = GetGraphWithoutGplane(faces, graph);
 
         //Находим цепь
         bool chainFound = false;
@@ -399,7 +423,7 @@ bool isComponentPlanar(const std::vector<std::vector<int>>& graph) {
         std::vector<int> faceOne;
         std::vector<int> faceTwo;
 
-        splitFaceWithChain(graphWithoutGplane, faceToBeInserted, chain, faceOne, faceTwo);
+        SplitFaceWithChain(graphWithoutGplane, faceToBeInserted, chain, faceOne, faceTwo);
 
         faces.erase(faces.begin() + availableFaceId[segmentWithMinimalG]);
         faces.push_back(faceOne);
@@ -416,7 +440,7 @@ bool isComponentPlanar(const std::vector<std::vector<int>>& graph) {
         }
 
         //Удаляем цепь и GPlane, т.к. она стала частью граней
-        removeChainFromGraph(graphWithoutGplane, chain);
+        RemoveChainFromGraph(graphWithoutGplane, chain);
 
         //Сегмент разделится на несколько сегментов или исчезнет?
 
@@ -427,11 +451,11 @@ bool isComponentPlanar(const std::vector<std::vector<int>>& graph) {
 
         } else {
             //Удалив цепь из графа, по новой находим все сегменты
-            graphWithoutGplane = getGraphWithoutGPlane(faces, graph);
+            graphWithoutGplane = GetGraphWithoutGplane(faces, graph);
 
             segments = {};
-            getSegments(faces, graphWithoutGplane, segments);
-            removeEqualSegments(segments);
+            GetSegments(faces, graphWithoutGplane, segments);
+            RemoveEqualSegments(segments);
         }
 
     }
@@ -469,7 +493,7 @@ void DFSForBridges( int from,
 };
 
 //Функция поиска мостов
-std::vector<std::pair<int, int>> findBridges(const std::vector<std::vector<int>>& graph) {
+std::vector<std::pair<int, int>> FindBridges(const std::vector<std::vector<int>>& graph) {
     std::vector<bool> visited(graph.size(),false);
     std::vector<int> timerIn(graph.size());
     std::vector<int> timerUp(graph.size(),1e9);
@@ -498,7 +522,7 @@ void DFSForComponents(int from, const std::vector<std::vector<int>>& graph,
 }
 
 //Проверяем, прошлись ли мы по вершине во время DFS
-bool vertexInHistory(int vertex, const std::vector<int>& history) {
+bool VertexInHistory(int vertex, const std::vector<int>& history) {
     for( auto v : history ) {
         if( v == vertex ) {
             return true;
@@ -508,7 +532,7 @@ bool vertexInHistory(int vertex, const std::vector<int>& history) {
 }
 
 //Из списка ребер получаем список детей для каждой вершины.
-std::vector<std::vector<int>> changeGraphRealisation(const std::vector<std::pair<int, int>>& component, 
+std::vector<std::vector<int>> ChangeGraphRealisation(const std::vector<std::pair<int, int>>& component, 
     const std::vector<int>& sortedHistory) 
 {
     std::vector<std::vector<int>> newTypeComponent(sortedHistory.size());
@@ -532,14 +556,14 @@ std::vector<std::vector<int>> changeGraphRealisation(const std::vector<std::pair
 
 //Из истории обхода DFS'ом получаем вершины, которые находятся в одной компоненте связности. 
 //Из них восстанавливаем эту компоненту
-std::vector<std::vector<int>> fromHistoryGetComponent(const std::vector<std::vector<int>>& graph, 
+std::vector<std::vector<int>> FromHistoryGetComponent(const std::vector<std::vector<int>>& graph, 
     const std::vector<int>& history) 
 {
     std::vector<std::pair<int, int>> component;
     for( size_t i = 0; i < graph.size(); ++i ) {
-        if( vertexInHistory(i, history) ) {
+        if( VertexInHistory(i, history) ) {
             for( size_t j = 0; j < graph[i].size(); ++j ) {
-                if( vertexInHistory(graph[i][j], history) ) {
+                if( VertexInHistory(graph[i][j], history) ) {
                     component.push_back(std::make_pair(i, graph[i][j]));
                 }
             }
@@ -548,26 +572,26 @@ std::vector<std::vector<int>> fromHistoryGetComponent(const std::vector<std::vec
     std::vector<int> sortedHistory = history;
     std::sort(sortedHistory.begin(), sortedHistory.end());
 
-    std::vector<std::vector<int>> newTypeComponent = changeGraphRealisation(component, sortedHistory);
+    std::vector<std::vector<int>> newTypeComponent = ChangeGraphRealisation(component, sortedHistory);
     return newTypeComponent;
 }
 
 //Получение всех компонент связности в виде списка отдельных графов. Принимает на вход граф без мостов
-std::vector<std::vector<std::vector<int>>> getAllComponents(const std::vector<std::vector<int>>& graphWithoutBridges) {
+std::vector<std::vector<std::vector<int>>> GetAllComponents(const std::vector<std::vector<int>>& graphWithoutBridges) {
     std::vector<std::vector<std::vector<int>>> allComponents;
     std::vector<bool> visited(graphWithoutBridges.size());
     for( size_t i = 0; i < graphWithoutBridges.size(); ++i ) {
         if( !visited[i] ) {
             std::vector<int> history;
             DFSForComponents(i, graphWithoutBridges, visited, history);
-            allComponents.push_back(fromHistoryGetComponent(graphWithoutBridges, history));
+            allComponents.push_back(FromHistoryGetComponent(graphWithoutBridges, history));
         }
     }
     return allComponents;
 }
 
 //Функция удаление мостов из графа. Возвращает новый граф без мостов. Принимает на вход список мостов.
-std::vector<std::vector<int>> getGraphWithoutBridges(const std::vector<std::vector<int>>& graph, 
+std::vector<std::vector<int>> GetGraphWithoutBridges(const std::vector<std::vector<int>>& graph, 
     const std::vector<std::pair<int, int>>& bridges) 
 {
     std::vector<std::vector<int>> graphWithoutBridges(graph.size());
@@ -588,20 +612,20 @@ std::vector<std::vector<int>> getGraphWithoutBridges(const std::vector<std::vect
     return graphWithoutBridges;
 }
 
-bool isPlanar(const std::vector<std::vector<int>>& graph) {
+bool IsPlanar(const std::vector<std::vector<int>>& graph) {
     //Нахождение всех мостов
-    std::vector<std::pair<int, int>> bridges = findBridges(graph);
+    std::vector<std::pair<int, int>> bridges = FindBridges(graph);
 
     //Удаление мостов
-    std::vector<std::vector<int>> graphWithoutBridges = getGraphWithoutBridges(graph, bridges);
+    std::vector<std::vector<int>> graphWithoutBridges = GetGraphWithoutBridges(graph, bridges);
 
     //Нахождение компонент связности
-    std::vector<std::vector<std::vector<int>>> allComponents = getAllComponents(graphWithoutBridges);
+    std::vector<std::vector<std::vector<int>>> allComponents = GetAllComponents(graphWithoutBridges);
 
     //Решаем задачу для каждой компоненты связности
     bool answer = true;
     for( size_t i = 0; i < allComponents.size(); ++i ) {
-        answer &= isComponentPlanar(allComponents[i]);
+        answer &= IsComponentPlanar(allComponents[i]);
     }
     return answer;
 }
@@ -624,7 +648,7 @@ int main() {
         }
     }
 
-    if( isPlanar(graph) ) {
+    if( IsPlanar(graph) ) {
         std::cout << "YES" << std::endl;
     } else {
         std::cout << "NO" << std::endl;
