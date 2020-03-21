@@ -648,11 +648,7 @@ int main() {
         }
     }
 
-    if( IsPlanar(graph) ) {
-        std::cout << "YES" << std::endl;
-    } else {
-        std::cout << "NO" << std::endl;
-    }
+    std::cout << ( IsPlanar(graph ) ? "YES" : "NO" ) << std::endl;
 
     return 0;
 }
