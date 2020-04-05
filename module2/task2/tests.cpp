@@ -10,7 +10,7 @@ TEST_CASE("Test1") {
     size_t start = 4;
     size_t finish = 1;
 
-    vector<vector<pair<size_t,int>>> graph = {
+    std::vector<std::vector<std::pair<size_t,int>>> graph = {
             {std::make_pair(1, 6)},
             {std::make_pair(4, 7)},
             {std::make_pair(4, 1)},
@@ -18,7 +18,7 @@ TEST_CASE("Test1") {
             {std::make_pair(0, 1)}
     };
 
-    int answer = solveProblem(graph, limit, start, finish);
+    int answer = SolveProblem(graph, limit, start, finish);
     REQUIRE(answer == 4);
 }
 
@@ -27,28 +27,28 @@ TEST_CASE("Test2") {
     size_t start = 1;
     size_t finish = 3;
 
-    vector<vector<pair<size_t,int>>> graph = {
+    std::vector<std::vector<std::pair<size_t,int>>> graph = {
             {std::make_pair(1, 4)},
             {std::make_pair(2, 5)},
             {std::make_pair(0, 6)}
     };
 
-    int answer = solveProblem(graph, limit, start, finish);
-    REQUIRE(answer == 4);
+    int answer = SolveProblem(graph, limit, start, finish);
+    REQUIRE(answer == -1);
 }
 
 TEST_CASE("Test3") {
     size_t limit = 1;
-    size_t start = 0;
-    size_t finish = 3;
+    size_t start = 1;
+    size_t finish = 4;
 
-    vector<vector<pair<size_t,int>>> graph = {
+    std::vector<std::vector<std::pair<size_t,int>>> graph = {
             {std::make_pair(3, 5), std::make_pair(1, 1)},
             {std::make_pair(2, 1)},
             {std::make_pair(3, 1)},
             {}
     };
 
-    int answer = solveProblem(graph, limit, start, finish);
+    int answer = SolveProblem(graph, limit, start, finish);
     REQUIRE(answer == 5);
 }
