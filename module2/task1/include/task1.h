@@ -14,6 +14,7 @@ struct Edge {
     int from;
     int to;
     int cost;
+    Edge(int from, int to, int cost);
 };
 
 int getAliveProbability(const vector<Edge>& graph, size_t vertexCount, int from, int to);

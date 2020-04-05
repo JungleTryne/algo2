@@ -29,16 +29,9 @@ int getAliveProbability(const vector<Edge>& graph, size_t vertexCount, int from,
 //Функция генерации графа телепортов во вселенной
 void generateGraph(vector<Edge>& graph, size_t graphSize, size_t aBottles, size_t bBottles) {
     for (size_t i = 0; i < graphSize; ++i) {
-        Edge edge{}; //Первый способ телепортации
-        edge.from = i;
-        edge.to = (i + 1) % graphSize;
-        edge.cost = aBottles;
+        Edge edge(i, (i + 1) % graphSize, aBottles); //Первый способ телепортации
+        Edge edgeSecond(i, (i*i + 1) % graphSize, bBottles); //Второй способ телепортации
         graph.push_back(edge);
-
-        Edge edgeSecond{}; //Второй способ телепортации
-        edgeSecond.from = i;
-        edgeSecond.to = (i*i + 1) % graphSize;
-        edgeSecond.cost = bBottles;
         graph.push_back(edgeSecond);
     }
 }
@@ -49,4 +42,10 @@ int solveProblem(size_t aBottles, size_t bBottles, size_t graphSize, size_t star
     generateGraph(graph, graphSize, aBottles, bBottles);
     int answer = getAliveProbability(graph, graphSize, start, finish);
     return answer;
+}
+
+Edge::Edge(int from, int to, int cost) {
+    this->from = from;
+    this->to = to;
+    this->cost = cost;
 }
