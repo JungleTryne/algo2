@@ -1,3 +1,6 @@
+//Мишин Данила, Б05-927
+//Задача С "Wake Me Up When Rickember Ends"
+
 #include "task3.h"
 
 Edge::Edge(size_t from, size_t to, double cost) {

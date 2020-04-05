@@ -1,5 +1,3 @@
-#include <cassert>
-
 #include "task3.h"
 
 int main() {
@@ -15,7 +13,6 @@ int main() {
         size_t from = 0, to = 0;
         double cost = 0;
         std::cin >> from >> to >> cost;
-        assert(from > 0 && to > 0);
         Edge edge1(from-1, to-1, cost);
         Edge edge2(to-1, from-1, cost);
         graph.push_back(edge1);
