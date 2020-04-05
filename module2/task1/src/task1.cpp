@@ -5,8 +5,8 @@
 
 //Функция вычисления количества бутылок, которые он отдаст
 //Используется модифицированный алгоритм Форда-Беллмана
-int getAliveProbability(const vector<Edge>& graph, size_t vertexCount, int from, int to) {
-    vector<int> dynamicCosts(vertexCount, INF);
+int GetAliveProbability(const std::vector<Edge>& graph, size_t vertexCount, int from, int to) {
+    std::vector<int> dynamicCosts(vertexCount, INF);
     dynamicCosts[from] = 0;
 
     while (true) {
@@ -27,7 +27,7 @@ int getAliveProbability(const vector<Edge>& graph, size_t vertexCount, int from,
 }
 
 //Функция генерации графа телепортов во вселенной
-void generateGraph(vector<Edge>& graph, size_t graphSize, size_t aBottles, size_t bBottles) {
+void GenerateGraph(std::vector<Edge>& graph, size_t graphSize, size_t aBottles, size_t bBottles) {
     for (size_t i = 0; i < graphSize; ++i) {
         Edge edge(i, (i + 1) % graphSize, aBottles); //Первый способ телепортации
         Edge edgeSecond(i, (i*i + 1) % graphSize, bBottles); //Второй способ телепортации
@@ -37,10 +37,10 @@ void generateGraph(vector<Edge>& graph, size_t graphSize, size_t aBottles, size_
 }
 
 //Функция решения задачи. Вынесена отдельно для выполнения тестов
-int solveProblem(size_t aBottles, size_t bBottles, size_t graphSize, size_t start, size_t finish) {
-    vector<Edge> graph;
-    generateGraph(graph, graphSize, aBottles, bBottles);
-    int answer = getAliveProbability(graph, graphSize, start, finish);
+int SolveProblem(size_t aBottles, size_t bBottles, size_t graphSize, size_t start, size_t finish) {
+    std::vector<Edge> graph;
+    GenerateGraph(graph, graphSize, aBottles, bBottles);
+    int answer = GetAliveProbability(graph, graphSize, start, finish);
     return answer;
 }
 
