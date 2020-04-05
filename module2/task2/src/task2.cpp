@@ -4,7 +4,7 @@
 #include "task2.h"
 
 //Функция нахождения нахождении минимального по стоимости путя
-//Используется алгоритм Форда-Беллмана
+//Используется алгоритм Дейкстры
 int FindShortestPaidPath(const std::vector<std::vector<std::pair<size_t, int>>>& graph, size_t from, size_t to, size_t limit) {
     std::vector<size_t> dynamicCost(graph.size(), INF);
     std::vector<size_t> stepsMade(graph.size(), -1); //Сколько шагов было сделано, чтобы добиться результата dynamicCost[i]
